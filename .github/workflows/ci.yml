@@ -2,21 +2,29 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+      - develop-server
+      # - develop-client
   pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+      - develop-server
+      # - develop-client
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  server:
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/develop-server'
+    runs-on: ubuntu-latest # 어떤 OS 환경에서 CI를 돌릴지
+    name: Server (Spring Boot)
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4 # GitHub Actions 실행 속도를 빠르게 하기 위해 캐시를 저장/복원하는 기능
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: temurin #	Java를 설치할 때 어떤 배포판을 쓸지 지정
           java-version: '21'
 
       - name: Cache Gradle packages
@@ -29,5 +37,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Run tests
-        run: SPRING_PROFILES_ACTIVE=test ./gradlew --no-daemon test
+      - name: Run Server tests
+        run: |
+          cd server
+          SPRING_PROFILES_ACTIVE=test ./gradlew --no-daemon build
+
+  # client:
+  #   if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/develop-client'
+  #   runs-on: ubuntu-latest
+  #   name: Client (Flutter)
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Set up Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: '3.32.8'
+
+  #     - name: Install dependencies
+  #       run: |
+  #         cd client
+  #         flutter pub get
+
+  #     - name: Run Client tests
+  #       run: |
+  #         cd client
+  #         flutter test
