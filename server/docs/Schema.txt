@@ -1,0 +1,22 @@
+-- 1. 테이블 생성
+CREATE TABLE IF NOT EXISTS public."users" (
+    "id"            BIGINT GENERATED ALWAYS AS IDENTITY,
+    "username"      VARCHAR(255) NOT NULL,
+    "email"         VARCHAR(255) NOT NULL,
+    "email_confirm" CHAR(1)      NOT NULL DEFAULT 'N',
+    "password_hash" VARCHAR(255) NOT NULL,
+    "role"          INTEGER      NOT NULL,
+    "created_at"    TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    "updated_at"    TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    "deleted_at"    TIMESTAMP(0) WITHOUT TIME ZONE NULL,
+    "last_login"    TIMESTAMP(0) WITHOUT TIME ZONE NULL,
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "users_email_unique" UNIQUE ("email"),
+    CONSTRAINT "users_email_confirm_check" CHECK ("email_confirm" IN ('N', 'Y'))
+);
+
+CREATE INDEX IF NOT EXISTS "users_email_password_hash_id_username_role_index"
+ON public."users" ("email", "password_hash", "id", "username", "role");
+
+COMMENT ON COLUMN public."users"."email_confirm" IS '이메일 인증 확인 시 Y 처리';
+COMMENT ON COLUMN public."users"."last_login"   IS '마지막 로그인 날짜';

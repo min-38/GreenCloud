@@ -16,9 +16,25 @@ on:
 
 jobs:
   server:
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/develop-server'
     runs-on: ubuntu-latest # 어떤 OS 환경에서 CI를 돌릴지
     name: Server (Spring Boot)
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        # DB가 준비될 때까지 기다리는 헬스 체크 옵션
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4 # GitHub Actions 실행 속도를 빠르게 하기 위해 캐시를 저장/복원하는 기능
       - name: Set up JDK 21
@@ -40,26 +56,8 @@ jobs:
       - name: Run Server tests
         run: |
           cd server
-          SPRING_PROFILES_ACTIVE=test ./gradlew --no-daemon build
-
-  # client:
-  #   if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/develop-client'
-  #   runs-on: ubuntu-latest
-  #   name: Client (Flutter)
-  #   steps:
-  #     - uses: actions/checkout@v4
-
-  #     - name: Set up Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: '3.32.8'
-
-  #     - name: Install dependencies
-  #       run: |
-  #         cd client
-  #         flutter pub get
-
-  #     - name: Run Client tests
-  #       run: |
-  #         cd client
-  #         flutter test
+          ./gradlew --no-daemon build
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
+          SPRING_DATASOURCE_USERNAME: user
+          SPRING_DATASOURCE_PASSWORD: password

@@ -39,3 +39,6 @@ out/
 /build/
 
 *.sh
+
+# 민감한 정보 숨김
+src/main/resources/application-*.yml
