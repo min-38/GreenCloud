@@ -19,7 +19,7 @@ import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @Component
-public class JwtTokenProvider {
+public class        JwtTokenProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 

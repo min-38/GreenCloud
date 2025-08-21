@@ -1,0 +1,4 @@
+BuildContext: 위젯이 트리에서 어디에 위치하는지, 그리고 그 주변 위젯·테마·Navigator 같은 Flutter 요소들에 접근할 수 있는 참조 객체
+Provider: Flutter BuildContext를 통해 의존성과 상태를 주입·관리하는 간단한 상태 관리 도구
+Riverpod: WidgetRef로 Provider를 제어하며 더 안전하고 유연하게 상태를 관리할 수 있도록 개선된 Provider.
+WidgetRef: Riverpod에서 Provider의 상태를 읽고(read), 감시하고(watch), 변화에 반응(listen)할 수 있도록 위젯에 전달되는 참조 객체

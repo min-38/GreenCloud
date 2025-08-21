@@ -28,5 +28,33 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+
+	<!-- App Transport Security: 개발 중 로컬 HTTP 통신 허용 -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- 로컬 네트워킹(127.0.0.1/localhost) 명시 허용 -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+
+		<!-- 특정 도메인 예외(HTTP 허용). 운영 전환 시 제거 권장 -->
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+			<key>127.0.0.1</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+
+		<!-- 필요 시 개발 중 임시로 전체 허용하려면 주석 해제 (운영 금지)
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		-->
+	</dict>
 </dict>
 </plist>
