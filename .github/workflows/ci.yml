@@ -2,21 +2,13 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
-      - develop-server
-      # - develop-client
+    branches: [ main, develop, develop-server ]
   pull_request:
-    branches:
-      - main
-      - develop
-      - develop-server
-      # - develop-client
+    branches: [ main, develop, develop-server ]
 
 jobs:
   server:
-    runs-on: ubuntu-latest # 어떤 OS 환경에서 CI를 돌릴지
+    runs-on: ubuntu-latest
     name: Server (Spring Boot)
 
     services:
@@ -28,19 +20,29 @@ jobs:
           POSTGRES_DB: testdb
         ports:
           - 5432:5432
-        # DB가 준비될 때까지 기다리는 헬스 체크 옵션
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     steps:
-      - uses: actions/checkout@v4 # GitHub Actions 실행 속도를 빠르게 하기 위해 캐시를 저장/복원하는 기능
+      - uses: actions/checkout@v4
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin #	Java를 설치할 때 어떤 배포판을 쓸지 지정
+          distribution: temurin
           java-version: '21'
 
       - name: Cache Gradle packages
@@ -54,10 +56,25 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Run Server tests
-        run: |
-          cd server
-          ./gradlew --no-daemon build
+        working-directory: server
+        run: ./gradlew --no-daemon build
         env:
+          # 프로필: 테스트로 고정
+          SPRING_PROFILES_ACTIVE: test
+
+          # DB (서비스 postgresql과 매칭)
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
           SPRING_DATASOURCE_USERNAME: user
           SPRING_DATASOURCE_PASSWORD: password
+
+          # Redis (서비스 redis와 매칭)
+          SPRING_REDIS_HOST: localhost
+          SPRING_REDIS_PORT: 6379
+
+          # JWT (Secrets에 저장 권장)
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_ACCESS_TOKEN_EXP_SECONDS: 900
+          JWT_REFRESH_TOKEN_EXP_SECONDS: 1209600
+
+          # Flyway를 테스트에서 끄고 싶다면 false (DB 마이그레이션이 테스트에 꼭 필요 없다면 권장)
+          FLYWAY_ENABLED: false
